@@ -1,0 +1,1 @@
+source "$BR2_EXTERNAL_UVC_GADGET_PATH/package/uvc-gadget/Config.in"

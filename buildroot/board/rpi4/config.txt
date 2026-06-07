@@ -1,0 +1,15 @@
+# Raspberry Pi 4 firmware configuration for UVC gadget mode
+# This file is copied to the FAT boot partition.
+
+# Use 64-bit kernel
+arm_64bit=1
+
+# Enable the dwc2 OTG controller on the USB-C port in peripheral (gadget) mode.
+# Without this overlay the USB-C port is power-only.
+dtoverlay=dwc2,dr_mode=peripheral
+
+# Allocate enough GPU memory for firmware; minimum for headless operation
+gpu_mem=16
+
+# Disable bluetooth to reduce power/complexity (optional)
+dtoverlay=disable-bt

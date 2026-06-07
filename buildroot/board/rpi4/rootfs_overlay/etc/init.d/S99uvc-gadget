@@ -1,0 +1,68 @@
+#!/bin/sh
+# ---------------------------------------------------------------------------
+# S99uvc-gadget – Start/stop the uvc-gadget daemon
+#
+# Depends on S45usbgadget having bound the UVC gadget to a UDC.
+# The UVC video device is typically /dev/video0 on a headless system
+# (no other V4L2 capture devices present).
+# ---------------------------------------------------------------------------
+
+DAEMON=/usr/bin/uvc-gadget
+PIDFILE=/var/run/uvc-gadget.pid
+LOGFILE=/var/log/uvc-gadget.log
+
+# Detect the UVC video device (first /dev/video* node)
+find_uvc_dev() {
+    for dev in /dev/video0 /dev/video1 /dev/video2; do
+        [ -e "$dev" ] && echo "$dev" && return
+    done
+    echo ""
+}
+
+start() {
+    echo "Starting uvc-gadget..."
+
+    UVC_DEV=$(find_uvc_dev)
+    if [ -z "$UVC_DEV" ]; then
+        echo "uvc-gadget: No /dev/video* device found – gadget not bound?"
+        return 1
+    fi
+    echo "uvc-gadget: Using device $UVC_DEV"
+
+    start-stop-daemon \
+        --start \
+        --background \
+        --make-pidfile --pidfile "$PIDFILE" \
+        --exec "$DAEMON" \
+        -- -u "$UVC_DEV" -x \
+        >> "$LOGFILE" 2>&1
+
+    echo "uvc-gadget: started (PID $(cat $PIDFILE 2>/dev/null))"
+}
+
+stop() {
+    echo "Stopping uvc-gadget..."
+    start-stop-daemon \
+        --stop \
+        --quiet \
+        --pidfile "$PIDFILE" \
+        --exec "$DAEMON"
+    rm -f "$PIDFILE"
+    echo "uvc-gadget: stopped"
+}
+
+case "$1" in
+    start)   start ;;
+    stop)    stop  ;;
+    restart|reload)
+        stop
+        sleep 1
+        start
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|restart}"
+        exit 1
+        ;;
+esac
+
+exit 0

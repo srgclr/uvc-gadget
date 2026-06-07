@@ -1,0 +1,123 @@
+#!/bin/sh
+# ---------------------------------------------------------------------------
+# S45usbgadget – Configure USB UVC gadget via configfs
+#
+# Runs after configfs is mounted (fstab handles that via mount -a in rcS).
+# Must complete before S99uvc-gadget starts.
+#
+# Advertised formats (MJPEG) match Canon 550D live-view output.
+# ---------------------------------------------------------------------------
+
+GADGET_DIR=/sys/kernel/config/usb_gadget/uvcgadget
+UDC_NAME=""
+
+gadget_create() {
+    # Find the available UDC (dwc2 on Pi 4 USB-C = fe980000.usb)
+    UDC_NAME=$(ls /sys/class/udc/ 2>/dev/null | head -1)
+    if [ -z "$UDC_NAME" ]; then
+        echo "S45usbgadget: No UDC found – is dtoverlay=dwc2 in config.txt?"
+        return 1
+    fi
+    echo "S45usbgadget: Using UDC $UDC_NAME"
+
+    mkdir -p "$GADGET_DIR"
+    cd "$GADGET_DIR"
+
+    # --- Device descriptor ---
+    echo 0x1d6b > idVendor    # Linux Foundation
+    echo 0x0104 > idProduct   # Multifunction Composite Gadget
+    echo 0x0100 > bcdDevice
+    echo 0x0200 > bcdUSB
+
+    mkdir -p strings/0x409
+    echo "000000000001"   > strings/0x409/serialnumber
+    echo "RPi4"           > strings/0x409/manufacturer
+    echo "UVC Camera"     > strings/0x409/product
+
+    # --- UVC function ---
+    mkdir -p functions/uvc.usb0
+
+    # Control interface headers
+    mkdir -p functions/uvc.usb0/control/header/h
+    ln -sf functions/uvc.usb0/control/header/h \
+           functions/uvc.usb0/control/class/fs/
+    ln -sf functions/uvc.usb0/control/header/h \
+           functions/uvc.usb0/control/class/ss/
+
+    # --- MJPEG 1056×704 (Canon 550D native live-view resolution) ---
+    mkdir -p functions/uvc.usb0/streaming/mjpeg/m/550d
+    echo 1056    > functions/uvc.usb0/streaming/mjpeg/m/550d/wWidth
+    echo 704     > functions/uvc.usb0/streaming/mjpeg/m/550d/wHeight
+    echo 333333  > functions/uvc.usb0/streaming/mjpeg/m/550d/dwDefaultFrameInterval
+    echo 333333  > functions/uvc.usb0/streaming/mjpeg/m/550d/dwFrameInterval
+    # dwMaxVideoFrameBufferSize: worst-case JPEG ≤ uncompressed size (1056×704 bytes)
+    echo 743424  > functions/uvc.usb0/streaming/mjpeg/m/550d/dwMaxVideoFrameBufferSize
+    echo 178421760 > functions/uvc.usb0/streaming/mjpeg/m/550d/dwMaxBitRate
+    echo 178421760 > functions/uvc.usb0/streaming/mjpeg/m/550d/dwMinBitRate
+
+    # Streaming header – link both frame sizes
+    mkdir -p functions/uvc.usb0/streaming/header/h
+    ln -sf "$GADGET_DIR/functions/uvc.usb0/streaming/mjpeg/m" \
+           functions/uvc.usb0/streaming/header/h/
+    ln -sf functions/uvc.usb0/streaming/header/h \
+           functions/uvc.usb0/streaming/class/fs/
+    ln -sf functions/uvc.usb0/streaming/header/h \
+           functions/uvc.usb0/streaming/class/hs/
+    ln -sf functions/uvc.usb0/streaming/header/h \
+           functions/uvc.usb0/streaming/class/ss/
+
+    # --- Configuration ---
+    mkdir -p configs/c.1/strings/0x409
+    echo "UVC"  > configs/c.1/strings/0x409/configuration
+    echo 500    > configs/c.1/MaxPower
+    ln -sf "$GADGET_DIR/functions/uvc.usb0" configs/c.1/
+
+    # --- Bind gadget to UDC ---
+    echo "$UDC_NAME" > UDC
+    echo "S45usbgadget: Gadget bound to $UDC_NAME"
+}
+
+gadget_destroy() {
+    [ -d "$GADGET_DIR" ] || return 0
+    cd "$GADGET_DIR"
+    echo "" > UDC 2>/dev/null || true
+    rm -f configs/c.1/uvc.usb0 2>/dev/null || true
+    rmdir configs/c.1/strings/0x409 configs/c.1 2>/dev/null || true
+    rm -f functions/uvc.usb0/streaming/class/fs/h \
+          functions/uvc.usb0/streaming/class/hs/h \
+          functions/uvc.usb0/streaming/class/ss/h 2>/dev/null || true
+    rm -f functions/uvc.usb0/streaming/header/h/m 2>/dev/null || true
+    rmdir functions/uvc.usb0/streaming/header/h \
+          functions/uvc.usb0/streaming/mjpeg/m/550d \
+          functions/uvc.usb0/streaming/mjpeg/m \
+          functions/uvc.usb0/streaming/mjpeg 2>/dev/null || true
+    rm -f functions/uvc.usb0/control/class/fs/h \
+          functions/uvc.usb0/control/class/ss/h 2>/dev/null || true
+    rmdir functions/uvc.usb0/control/header/h 2>/dev/null || true
+    rmdir functions/uvc.usb0 2>/dev/null || true
+    rmdir strings/0x409 2>/dev/null || true
+    cd /
+    rmdir "$GADGET_DIR" 2>/dev/null || true
+    echo "S45usbgadget: Gadget removed"
+}
+
+case "$1" in
+    start)
+        echo "Starting USB gadget..."
+        gadget_create
+        ;;
+    stop)
+        echo "Stopping USB gadget..."
+        gadget_destroy
+        ;;
+    restart|reload)
+        "$0" stop
+        "$0" start
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|restart}"
+        exit 1
+        ;;
+esac
+
+exit 0
