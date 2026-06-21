@@ -15,6 +15,11 @@ BR2_TOOLCHAIN_BUILDROOT_GLIBC=y
 BR2_TOOLCHAIN_BUILDROOT_CXX=y
 BR2_USE_WCHAR=y
 BR2_ENABLE_LOCALE=y
+# Raspberry Pi downstream kernel is 6.6.x.  BR2_KERNEL_HEADERS_AS_KERNEL
+# reuses the kernel source for toolchain headers, so we must declare the
+# series via the "Custom kernel headers series" choice so the version check
+# passes.
+BR2_PACKAGE_HOST_LINUX_HEADERS_CUSTOM_6_6=y
 
 # ------------------------------------------------------------
 # System
@@ -32,7 +37,7 @@ BR2_INIT_BUSYBOX=y
 # ------------------------------------------------------------
 BR2_LINUX_KERNEL=y
 BR2_LINUX_KERNEL_CUSTOM_TARBALL=y
-BR2_LINUX_KERNEL_CUSTOM_TARBALL_LOCATION="$(call github,raspberrypi,linux,1.20240529)/raspberrypi-linux-1.20240529.tar.gz"
+BR2_LINUX_KERNEL_CUSTOM_TARBALL_LOCATION="$(call github,raspberrypi,linux,576cc10e1ed50a9eacffc7a05c796051d7343ea4)/linux-576cc10e1ed50a9eacffc7a05c796051d7343ea4.tar.gz"
 BR2_LINUX_KERNEL_DEFCONFIG="bcm2711"
 BR2_LINUX_KERNEL_NEEDS_HOST_OPENSSL=y
 # Our fragment enables USB gadget + UVC configfs
