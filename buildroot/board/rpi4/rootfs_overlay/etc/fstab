@@ -3,5 +3,6 @@ proc                /proc                     proc        defaults            0 
 sysfs               /sys                      sysfs       defaults            0      0
 devtmpfs            /dev                      devtmpfs    defaults            0      0
 tmpfs               /tmp                      tmpfs       defaults            0      0
+tmpfs               /run                      tmpfs       nosuid,nodev,mode=0755 0 0
 # configfs is required for the USB gadget setup
 none                /sys/kernel/config        configfs    defaults            0      0
