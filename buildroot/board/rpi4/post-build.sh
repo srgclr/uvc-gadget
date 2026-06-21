@@ -15,7 +15,8 @@ cp -f "${RPI_FW}/bcm2711-rpi-4-b.dtb" "${BINARIES_DIR}/"
 cp -f "${RPI_FW}/fixup4.dat"           "${BINARIES_DIR}/"
 cp -f "${RPI_FW}/start4.elf"           "${BINARIES_DIR}/"
 mkdir -p "${BINARIES_DIR}/overlays"
-cp -f "${RPI_FW}/overlays/dwc2.dtbo"   "${BINARIES_DIR}/overlays/"
+cp -f "${RPI_FW}/overlays/dwc2.dtbo"        "${BINARIES_DIR}/overlays/"
+cp -f "${RPI_FW}/overlays/disable-bt.dtbo"  "${BINARIES_DIR}/overlays/"
 
 # Ensure init scripts are executable
 chmod +x "${TARGET_DIR}/etc/init.d/S45usbgadget" 2>/dev/null || true
