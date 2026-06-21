@@ -19,11 +19,12 @@ cp -f "${RPI_FW}/overlays/dwc2.dtbo"        "${BINARIES_DIR}/overlays/"
 cp -f "${RPI_FW}/overlays/disable-bt.dtbo"  "${BINARIES_DIR}/overlays/"
 
 # Remove services not needed on a dedicated camera appliance
+rm -f "${TARGET_DIR}/etc/init.d/S01seedrng"
 rm -f "${TARGET_DIR}/etc/init.d/S01syslogd"
 rm -f "${TARGET_DIR}/etc/init.d/S02klogd"
+rm -f "${TARGET_DIR}/etc/init.d/S02sysctl"
 rm -f "${TARGET_DIR}/etc/init.d/S40network"
 rm -f "${TARGET_DIR}/etc/init.d/S50crond"
-rm -f "${TARGET_DIR}/etc/init.d/S02sysctl"
 
 # Ensure init scripts are executable
 chmod +x "${TARGET_DIR}/etc/init.d/S45usbgadget" 2>/dev/null || true
