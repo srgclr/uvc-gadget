@@ -30,3 +30,5 @@ boot_delay=0            # No artificial delay before loading kernel
 force_eeprom_read=0     # Skip HAT EEPROM probe on GPIO 0/1
 camera_auto_detect=0    # Don't probe for camera modules (CSI)
 display_auto_detect=0   # Don't probe for display peripherals
+hdmi_ignore_cec_init=1  # Skip CEC bus initialisation
+initial_turbo=30        # Hold CPU at max frequency for first 30s of boot
