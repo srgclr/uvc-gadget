@@ -44,7 +44,6 @@
 
 #include <errno.h>
 #include <fcntl.h>
-#include <sched.h>
 #include <ftw.h>
 #include <pthread.h>
 #include <signal.h>
@@ -1807,10 +1806,6 @@ static void *uvc_loop() {
 int main(int argc, char *argv[]) {
   int ret;
   int opt;
-
-  struct sched_param sp = { .sched_priority = 50 };
-  if (sched_setscheduler(0, SCHED_FIFO, &sp) < 0)
-    printf("WARNING: Failed to set real-time priority: %s\n", strerror(errno));
 
   struct sigaction action;
   CLEAR(action);
