@@ -15,3 +15,6 @@ gpu_mem=64
 # Disable bluetooth: no BT firmware is installed, so the hardware
 # won't initialise. Suppress the kernel's hci_uart probe attempt.
 dtoverlay=disable-bt
+
+# Disable HDMI output: headless appliance, serial console used for debug
+hdmi_ignore_hotplug=1
