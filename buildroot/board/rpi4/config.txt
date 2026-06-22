@@ -18,3 +18,6 @@ dtoverlay=disable-bt
 
 # Disable HDMI output: headless appliance, serial console used for debug
 hdmi_ignore_hotplug=1
+
+# Disable onboard WiFi chip to skip SDIO probe on mmc1
+dtoverlay=disable-wifi
