@@ -46,6 +46,7 @@
 #include <fcntl.h>
 #include <ftw.h>
 #include <pthread.h>
+#include <sched.h>
 #include <signal.h>
 #include <stdatomic.h>
 #include <stdbool.h>
@@ -1398,6 +1399,13 @@ static void processing_loop_camera_uvc() {
     printf("PROCESSING: Failed to start capture thread\n");
     return;
   }
+
+  /* Elevate only this (UVC select loop) thread to real-time priority.
+   * The capture thread was already created above at normal priority so
+   * gphoto2 USB completions are not starved. */
+  struct sched_param sp = { .sched_priority = 20 };
+  if (pthread_setschedparam(pthread_self(), SCHED_FIFO, &sp) != 0)
+    printf("WARNING: Failed to set real-time priority: %s\n", strerror(errno));
 
   while (!terminate) {
     if (!atomic_load(&is_camera_ready)) {
