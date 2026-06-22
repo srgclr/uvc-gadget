@@ -779,18 +779,7 @@ static void *uvc_camera_video_process() {
     return NULL;
   }
 
-  static uint64_t uvc_sent_seq = UINT64_MAX;
-
   pthread_mutex_lock(&lock);
-  /* Wait up to 30 ms for a frame we haven't sent yet */
-  if (cam_ready_buf < 0 || cam_frame_seq == uvc_sent_seq) {
-    struct timespec deadline;
-    clock_gettime(CLOCK_REALTIME, &deadline);
-    long long ns = deadline.tv_nsec + 30000000LL;
-    deadline.tv_sec  += ns / 1000000000LL;
-    deadline.tv_nsec  = (int)(ns % 1000000000LL);
-    pthread_cond_timedwait(&cam_frame_cond, &lock, &deadline);
-  }
   if (cam_ready_buf >= 0 && cam_rawdata[cam_ready_buf] != NULL) {
     size_t copy_size = cam_sizes[cam_ready_buf];
     if (copy_size > uvc_dev.mem[ubuf.index].length) {
@@ -798,7 +787,6 @@ static void *uvc_camera_video_process() {
     }
     memcpy(uvc_dev.mem[ubuf.index].start, cam_rawdata[cam_ready_buf], copy_size);
     ubuf.bytesused = copy_size;
-    uvc_sent_seq = cam_frame_seq;
   } else {
     ubuf.bytesused = 0;
   }
