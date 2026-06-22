@@ -9,8 +9,10 @@ kernel=Image
 # Without this overlay the USB-C port is power-only.
 dtoverlay=dwc2,dr_mode=peripheral
 
-# Allocate enough GPU memory for firmware; minimum for headless operation
-gpu_mem=64
+# Use cut-down firmware: no GPU codecs or 3D, smaller file, faster startup
+gpu_mem=16
+start_file=start4cd.elf
+fixup_file=fixup4cd.dat
 
 # Disable bluetooth: no BT firmware is installed, so the hardware
 # won't initialise. Suppress the kernel's hci_uart probe attempt.
