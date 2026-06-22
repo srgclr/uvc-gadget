@@ -21,3 +21,10 @@ hdmi_ignore_hotplug=1
 
 # Disable onboard WiFi chip to skip SDIO probe on mmc1
 dtoverlay=disable-wifi
+
+# Firmware startup optimisations
+disable_splash=1        # Skip rainbow splash screen
+boot_delay=0            # No artificial delay before loading kernel
+force_eeprom_read=0     # Skip HAT EEPROM probe on GPIO 0/1
+camera_auto_detect=0    # Don't probe for camera modules (CSI)
+display_auto_detect=0   # Don't probe for display peripherals
