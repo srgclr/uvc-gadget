@@ -13,7 +13,6 @@ null::sysinit:/bin/ln -sf /proc/self/fd/2 /dev/stderr
 ::sysinit:/etc/init.d/rcS
 
 console::respawn:/sbin/getty -L  console 0 vt100 # GENERIC_SERIAL
-ttyGS0::respawn:/sbin/getty -L ttyGS0 115200 vt100
 
 ::shutdown:/etc/init.d/rcK
 ::shutdown:/sbin/swapoff -a
