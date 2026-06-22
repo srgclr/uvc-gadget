@@ -8,8 +8,8 @@
 # ---------------------------------------------------------------------------
 
 DAEMON=/usr/bin/uvc-gadget
-PIDFILE=/var/run/uvc-gadget.pid
-LOGFILE=/var/log/uvc-gadget.log
+PIDFILE=/tmp/uvc-gadget.pid
+LOGFILE=/tmp/uvc-gadget.log
 
 # Detect the UVC video device (first /dev/video* node)
 find_uvc_dev() {
